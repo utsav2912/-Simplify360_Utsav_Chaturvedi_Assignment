@@ -9,61 +9,46 @@ class Graph:
         self.adj_list[person1].add(person2)
         self.adj_list[person2].add(person1)
 
-    def get_friends(self, person):
-        # Return the set of friends for a given person
-        return self.adj_list[person]
-
-    def get_common_friends(self, person1, person2):
-        # Get the intersection of friends sets of person1 and person2
-        return self.adj_list[person1].intersection(self.adj_list[person2])
-
-    def find_connection(self, person1, person2):
-        # Return -1 if either person is not in the graph
-        if person1 not in self.adj_list or person2 not in self.adj_list:
-            return -1
-        
-        # BFS to find the shortest path between person1 and person2
-        queue = deque([(person1, 0)])
-        visited = set([person1])
-        
+    def bfs(self, start):
+        # Perform BFS to find all friends and distances from start
+        visited = set()
+        queue = deque([(start, 0)])
+        friends = {}
         while queue:
-            current, level = queue.popleft()
-            if current == person2:
-                return level
-            
-            for neighbor in self.adj_list[current]:
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    queue.append((neighbor, level + 1))
-        
-        return -1
+            person, distance = queue.popleft()
+            if person not in visited:
+                visited.add(person)
+                friends[person] = distance
+                for neighbor in self.adj_list[person]:
+                    if neighbor not in visited:
+                        queue.append((neighbor, distance + 1))
+        return friends
 
 def main():
-    g = Graph()
-    g.add_friendship("Alice", "Bob")
-    g.add_friendship("Bob", "Janice")
-    g.add_friendship("Alice", "Charlie")
-    g.add_friendship("Charlie", "Diana")
+    graph = Graph()
+    
+    # Add friendships
+    graph.add_friendship("Alice", "Bob")
+    graph.add_friendship("Alice", "Charlie")
+    graph.add_friendship("Bob", "David")
+    graph.add_friendship("Charlie", "Eve")
+    graph.add_friendship("David", "Eve")
 
-    # Find friends of Alice
-    alice_friends = g.get_friends("Alice")
+    # Find all friends of Alice
+    alice_friends = graph.bfs("Alice")
     print("Friends of Alice:", alice_friends)
 
-    # Find friends of Bob
-    bob_friends = g.get_friends("Bob")
+    # Find all friends of Bob
+    bob_friends = graph.bfs("Bob")
     print("Friends of Bob:", bob_friends)
 
     # Find common friends of Alice and Bob
-    common_friends = g.get_common_friends("Alice", "Bob")
-    print("Common friends of Alice and Bob:", common_friends)
+    common_friends = set(alice_friends.keys()).intersection(bob_friends.keys())
+    print("Common Friends of Alice and Bob:", common_friends)
 
-    # Find connection between Alice and Janice
-    connection = g.find_connection("Alice", "Janice")
-    print("Connection between Alice and Janice:", connection)
-
-    # Find connection between Alice and Diana
-    connection = g.find_connection("Alice", "Diana")
-    print("Connection between Alice and Diana:", connection)
+    # Find nth connection between Alice and Eve
+    nth_connection = alice_friends.get("Eve", -1)
+    print("Nth connection between Alice and Eve:", nth_connection)
 
 if __name__ == "__main__":
     main()
